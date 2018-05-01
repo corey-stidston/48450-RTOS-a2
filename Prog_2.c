@@ -1,3 +1,9 @@
+/*
+ * Author: Corey Stidston
+ * Compilation method: For compiling this source code, you should use two flags, -lrt
+ * e.g. gcc Prog_2.c -lrt
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,8 +12,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
-//Note: ues -lrt flag to compile.
 
 int main()
 {

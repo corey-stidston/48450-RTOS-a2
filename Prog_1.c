@@ -1,3 +1,9 @@
+/*
+ * Author: Corey Stidston
+ * Compilation method: For compiling this source code, you should use two flags, -pthread and -lrt
+ * e.g. gcc Prog_1.c -pthread -lrt
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -8,8 +14,6 @@
 #include <sys/shm.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-
-// Note: use -pthread and -lrt to compile
 
 #define BUFFER_SIZE 1024
 #define DATA_FILENAME "data.txt"
@@ -114,7 +118,7 @@ void *readData(void *param)
     
     while(!sem_wait(&readSem) && fgets(line, BUFFER_SIZE, readFile) != NULL)
     {
-        write(parameters->fd[1], line, strlen(line)+1); // write into the pipe
+        write(parameters->fd[1], line, strlen(line)+1); // Write into the pipe
         sem_post(&passSem);
     }
 
@@ -135,7 +139,7 @@ void *passData(void *param)
     
     while(!sem_wait(&passSem))
     {
-        read(parameters->fd[0], parameters->shared_buffer, BUFFER_SIZE); // read from the pipe
+        read(parameters->fd[0], parameters->shared_buffer, BUFFER_SIZE); // Read from the pipe
         sem_post(&writeSem);
     }
     
@@ -154,15 +158,16 @@ void *writeData(void *param)
     }
     
     char line[BUFFER_SIZE];
-    int eoh_flag = 0;
+    int eoh_flag = 0; // End of header flag
     
     while(!sem_wait(&writeSem))
     {
         if(eoh_flag)
         {
+            /* Place the contents of the shared buffer into file */
             fputs(parameters->shared_buffer->buffer, writeFile);
         }
-        else if(strstr(parameters->shared_buffer->buffer, END_OF_HEADER))
+        else if(strstr(parameters->shared_buffer->buffer, END_OF_HEADER)) // Check for the end of header
         {
             eoh_flag = 1;
         }
