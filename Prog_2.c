@@ -11,7 +11,7 @@
 
 int main()
 {
-    const int SIZE = sizeof(int);
+    const int SIZE = sizeof(double);
     const char *name = "shared";
     
     int shm_fd;
@@ -33,7 +33,7 @@ int main()
         exit(0);
     }
     
-    printf("The running time of Prog_1 was - %s milliseconds.\n", (char *)ptr);
+    printf("The running time of Prog_1 was: %s milliseconds.\n", (char *)ptr);
     shm_unlink(name);
     
 	return 0;
