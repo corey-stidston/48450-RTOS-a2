@@ -4,7 +4,7 @@
 #include <semaphore.h>
 #include <string.h>
 #include <sys/types.h>
-#include <time.h>
+#include <sys/time.h>
 #include <sys/shm.h>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -45,21 +45,21 @@ void *passData(); // Passes to ThreadC
 void *writeData(); // Writes content to src.text
 void initializeData(); // Initializes Data
 
-void writeRunningTimetoSharedMemory(int runningTimeInMilliseconds)
+void writeRunningTimetoSharedMemory(double runningTimeInMilliseconds)
 {
     int shm_fd = shm_open(SHARED_MEMORY_NAME, O_CREAT | O_RDWR, 0666);
     
-    ftruncate(shm_fd, sizeof(int));
-    void *ptr = mmap(0, sizeof(int), PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    ftruncate(shm_fd, sizeof(double));
+    void *ptr = mmap(0, sizeof(double), PROT_WRITE, MAP_SHARED, shm_fd, 0);
     
-    sprintf(ptr, "%i", runningTimeInMilliseconds);
+    sprintf(ptr, "%lf", runningTimeInMilliseconds);
 }
 
 int main(int argc, char*argv[])
 {
-    struct timeval start, end;
+    struct timeval start_tv, end_tv;
     
-    gettimeofday(&start, NULL);
+    gettimeofday(&start_tv, NULL);
     
     int fd[2];
     
@@ -90,11 +90,11 @@ int main(int argc, char*argv[])
     if(pthread_join(tidC, NULL) != 0)
         printf("Issue joining Thread C\n");
         
-    gettimeofday(&end, NULL);
-    int mtime = ((end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec)/1000.0);
-    printf("Elapsed Time: %i milliseconds\n", mtime);
+    gettimeofday(&end_tv, NULL);
+    double runtime = ((end_tv.tv_sec - start_tv.tv_sec) * 1000.0 + (end_tv.tv_usec - start_tv.tv_usec)/1000.0);
+    printf("Elapsed Time: %f milliseconds\n", runtime);
     
-    writeRunningTimetoSharedMemory(mtime);
+    writeRunningTimetoSharedMemory(runtime);
     
     return(0);
 }
