@@ -1,7 +1,10 @@
 /*
  * Author: Corey Stidston
  * Compilation method: For compiling this source code, you should use two flags, -pthread and -lrt
- * e.g. gcc Prog_1.c -pthread -lrt
+ * e.g:     gcc Prog_1.c -pthread -lrt
+ * When executing Prog_1, provide the data txt file and the source txt file name
+ * i.e:     ./a.out data.txt src.txt
+ * The program will use data.txt as the input and src.txt as the output
  */
 
 #include <stdlib.h>
@@ -16,8 +19,6 @@
 #include <fcntl.h>
 
 #define BUFFER_SIZE 1024
-#define DATA_FILENAME "data.txt"
-#define SRC_FILENAME "src.txt"
 #define END_OF_HEADER "end_header"
 #define SHARED_MEMORY_NAME "shared"
 
@@ -61,6 +62,12 @@ void writeRunningTimetoSharedMemory(double runningTimeInMilliseconds)
 
 int main(int argc, char*argv[])
 {
+    if(argc != 3)
+    {
+        printf("Please supply two arguments, a data file name and source file name.\n");
+        exit(0);
+    }
+    
     struct timeval start_tv, end_tv;
     
     gettimeofday(&start_tv, NULL);
@@ -77,9 +84,9 @@ int main(int argc, char*argv[])
     
     // Initialize data structures for each thread
     buffer_t sharedBuffer = {0};
-    reading_args_t reading_args = {fd, DATA_FILENAME};
+    reading_args_t reading_args = {fd, argv[1]};
     passing_args_t passing_args = {fd, &sharedBuffer};
-    writing_args_t writing_args = {&sharedBuffer, SRC_FILENAME};
+    writing_args_t writing_args = {&sharedBuffer, argv[2]};
     
     pthread_attr_init(&attr); // Get the default attributes
     
@@ -95,7 +102,7 @@ int main(int argc, char*argv[])
         printf("Issue joining Thread C\n");
         
     gettimeofday(&end_tv, NULL);
-    double runtime = ((end_tv.tv_sec - start_tv.tv_sec) * 1000.0 + (end_tv.tv_usec - start_tv.tv_usec)/1000.0);
+    double runtime = (((double) end_tv.tv_sec - start_tv.tv_sec) * 1000.0 + (end_tv.tv_usec - start_tv.tv_usec)/1000.0);
     printf("Elapsed Time: %f milliseconds\n", runtime);
     
     writeRunningTimetoSharedMemory(runtime);
@@ -112,7 +119,7 @@ void *readData(void *param)
     FILE* readFile = fopen(parameters->filename, "r");
     if(!readFile)
     {
-        perror("Invalid File\n");
+        perror("Invalid File");
         exit(0);
     }
     
@@ -153,7 +160,7 @@ void *writeData(void *param)
     FILE* writeFile = fopen(parameters->filename, "w");
     if(!writeFile)
     {
-        perror("Invalid File\n");
+        perror("Invalid File");
         exit(0);
     }
     
